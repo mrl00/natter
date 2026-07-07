@@ -19,6 +19,7 @@ internal/
 build/docker/
 ├── Dockerfile              # prod (builder + distroless)
 └── Dockerfile.dev          # dev (alpine + air)
+docs/                       # generated swagger docs
 migrations/                 # SQL migrations
 tests/e2e/                  # hurl end-to-end tests
 ```
@@ -40,32 +41,41 @@ This keeps layers decoupled — swapping persistence only requires a new impleme
 | GET    | `/spaces/{spaceId}/messages`             | List messages (`?since=<RFC3339>`) |
 | GET    | `/spaces/{spaceId}/messages/{messageId}` | Get a single message              |
 
+## API Documentation
+
+Swagger UI is available at `http://localhost:8080/swagger/` when the server is running.
+
+To regenerate docs after changing annotations:
+
+```sh
+make swagger
+```
+
 ## Running
 
 ```sh
-go run ./cmd/server
+make run
 ```
 
 Set `DATABASE_URL` to use PostgreSQL (falls back to in-memory):
 
 ```sh
-DATABASE_URL="postgres://natter:natter@localhost:5432/natter_db?sslmode=disable" go run ./cmd/server
+DATABASE_URL="postgres://natter:natter@localhost:5432/natter_db?sslmode=disable" make run
 ```
 
 ### Docker Compose
 
 ```sh
 # dev with hot reload
-docker compose up --build
+make docker-up
 
 # prod
-docker build -f build/docker/Dockerfile -t natter .
+make docker-build
 docker run -p 8080:8080 natter
 ```
 
 ## Tests
 
 ```sh
-# run all e2e tests
-hurl --test tests/e2e/*.hurl
+make test
 ```

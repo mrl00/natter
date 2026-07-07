@@ -31,10 +31,28 @@ func jsonError(w http.ResponseWriter, status int, msg string) {
 	jsonResponse(w, status, map[string]string{"error": msg})
 }
 
+// Health godoc
+// @Summary      Health check
+// @Description  Returns the service status
+// @Tags         health
+// @Produce      json
+// @Success      200 {object} map[string]string
+// @Router       /health [get]
 func (h *Handlers) Health(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
+// CreateSpace godoc
+// @Summary      Create a space
+// @Description  Creates a new social space. The user that performs this request becomes the owner.
+// @Tags         spaces
+// @Accept       json
+// @Produce      json
+// @Param        request body model.CreateSpaceRequest true "Space data"
+// @Success      201 {object} model.Space
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /spaces [post]
 func (h *Handlers) CreateSpace(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateSpaceRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -55,6 +73,19 @@ func (h *Handlers) CreateSpace(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusCreated, space)
 }
 
+// AddMessage godoc
+// @Summary      Add a message
+// @Description  Adds a message to a social space
+// @Tags         messages
+// @Accept       json
+// @Produce      json
+// @Param        spaceId path string true "Space ID"
+// @Param        request body model.CreateMessageRequest true "Message data"
+// @Success      201 {object} model.Message
+// @Failure      400 {object} map[string]string
+// @Failure      404 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /spaces/{spaceId}/messages [post]
 func (h *Handlers) AddMessage(w http.ResponseWriter, r *http.Request) {
 	spaceID := r.PathValue("spaceId")
 
@@ -81,6 +112,17 @@ func (h *Handlers) AddMessage(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusCreated, msg)
 }
 
+// ListMessages godoc
+// @Summary      List messages
+// @Description  Returns all messages in a space, optionally filtered by a since timestamp
+// @Tags         messages
+// @Produce      json
+// @Param        spaceId path string true "Space ID"
+// @Param        since query string false "RFC3339 timestamp to filter messages"
+// @Success      200 {array} model.Message
+// @Failure      400 {object} map[string]string
+// @Failure      404 {object} map[string]string
+// @Router       /spaces/{spaceId}/messages [get]
 func (h *Handlers) ListMessages(w http.ResponseWriter, r *http.Request) {
 	spaceID := r.PathValue("spaceId")
 
@@ -107,6 +149,16 @@ func (h *Handlers) ListMessages(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, msgs)
 }
 
+// GetMessage godoc
+// @Summary      Get a message
+// @Description  Returns the details of a single message
+// @Tags         messages
+// @Produce      json
+// @Param        spaceId path string true "Space ID"
+// @Param        messageId path string true "Message ID"
+// @Success      200 {object} model.Message
+// @Failure      404 {object} map[string]string
+// @Router       /spaces/{spaceId}/messages/{messageId} [get]
 func (h *Handlers) GetMessage(w http.ResponseWriter, r *http.Request) {
 	spaceID := r.PathValue("spaceId")
 	messageID := r.PathValue("messageId")

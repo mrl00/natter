@@ -1,0 +1,210 @@
+basePath: /
+definitions:
+  model.CreateMessageRequest:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+    type: object
+  model.CreateSpaceRequest:
+    properties:
+      name:
+        type: string
+      owner:
+        type: string
+    type: object
+  model.Message:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      spaceId:
+        type: string
+    type: object
+  model.Space:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Social network for coffee mornings, book groups, and other small gatherings.
+  title: Natter API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Returns the service status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /spaces:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new social space. The user that performs this request
+        becomes the owner.
+      parameters:
+      - description: Space data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateSpaceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Space'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a space
+      tags:
+      - spaces
+  /spaces/{spaceId}/messages:
+    get:
+      description: Returns all messages in a space, optionally filtered by a since
+        timestamp
+      parameters:
+      - description: Space ID
+        in: path
+        name: spaceId
+        required: true
+        type: string
+      - description: RFC3339 timestamp to filter messages
+        in: query
+        name: since
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Message'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List messages
+      tags:
+      - messages
+    post:
+      consumes:
+      - application/json
+      description: Adds a message to a social space
+      parameters:
+      - description: Space ID
+        in: path
+        name: spaceId
+        required: true
+        type: string
+      - description: Message data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Message'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a message
+      tags:
+      - messages
+  /spaces/{spaceId}/messages/{messageId}:
+    get:
+      description: Returns the details of a single message
+      parameters:
+      - description: Space ID
+        in: path
+        name: spaceId
+        required: true
+        type: string
+      - description: Message ID
+        in: path
+        name: messageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Message'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a message
+      tags:
+      - messages
+swagger: "2.0"

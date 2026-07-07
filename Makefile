@@ -1,4 +1,4 @@
-.PHONY: run build test lint docker-up docker-down docker-build clean
+.PHONY: run build test lint swagger docker-up docker-down docker-build clean
 
 run:
 	go run ./cmd/server
@@ -12,6 +12,9 @@ test:
 
 lint:
 	go vet ./...
+
+swagger:
+	swag init -g cmd/server/main.go
 
 docker-up:
 	docker compose up --build

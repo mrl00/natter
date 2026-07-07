@@ -4,6 +4,9 @@ package api
 
 import (
 	"net/http"
+
+	_ "github.com/mrl00/natter/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func NewRouter(h *Handlers) *http.ServeMux {
@@ -14,6 +17,10 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.HandleFunc("POST /spaces/{spaceId}/messages", h.AddMessage)
 	mux.HandleFunc("GET /spaces/{spaceId}/messages", h.ListMessages)
 	mux.HandleFunc("GET /spaces/{spaceId}/messages/{messageId}", h.GetMessage)
+
+	mux.Handle("GET /swagger/", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
 
 	return mux
 }

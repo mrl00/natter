@@ -3,6 +3,13 @@
 //
 // Environment variables:
 //   - DATABASE_URL: PostgreSQL connection string (optional; defaults to in-memory store).
+//
+// @title           Natter API
+// @version         1.0
+// @description     Social network for coffee mornings, book groups, and other small gatherings.
+//
+// @host            localhost:8080
+// @BasePath        /
 package main
 
 import (
