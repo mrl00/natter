@@ -62,7 +62,8 @@ func (r *Repository) CreateSpace(name, owner string) *model.Space {
 	id := generateID()
 	now := time.Now().UTC()
 
-	_, _ = r.db.ExecContext(context.Background(),
+	_, _ = r.db.ExecContext(
+		context.Background(),
 		`INSERT INTO spaces (id, name, owner, created_at) VALUES ($1, $2, $3, $4)`,
 		id, name, owner, now,
 	)
@@ -77,7 +78,8 @@ func (r *Repository) CreateSpace(name, owner string) *model.Space {
 
 func (r *Repository) GetSpace(id string) (*model.Space, bool) {
 	var s model.Space
-	err := r.db.QueryRowContext(context.Background(),
+	err := r.db.QueryRowContext(
+		context.Background(),
 		`SELECT id, name, owner, created_at FROM spaces WHERE id = $1`, id,
 	).Scan(&s.ID, &s.Name, &s.Owner, &s.CreatedAt)
 	if err != nil {
@@ -88,7 +90,8 @@ func (r *Repository) GetSpace(id string) (*model.Space, bool) {
 
 func (r *Repository) AddMessage(spaceID, author, content string) (*model.Message, bool) {
 	var exists bool
-	_ = r.db.QueryRowContext(context.Background(),
+	_ = r.db.QueryRowContext(
+		context.Background(),
 		`SELECT EXISTS(SELECT 1 FROM spaces WHERE id = $1)`, spaceID,
 	).Scan(&exists)
 	if !exists {
@@ -98,7 +101,8 @@ func (r *Repository) AddMessage(spaceID, author, content string) (*model.Message
 	id := generateID()
 	now := time.Now().UTC()
 
-	_, _ = r.db.ExecContext(context.Background(),
+	_, _ = r.db.ExecContext(
+		context.Background(),
 		`INSERT INTO messages (id, space_id, author, content, created_at) VALUES ($1, $2, $3, $4, $5)`,
 		id, spaceID, author, content, now,
 	)
@@ -114,20 +118,25 @@ func (r *Repository) AddMessage(spaceID, author, content string) (*model.Message
 
 func (r *Repository) ListMessages(spaceID string) ([]*model.Message, bool) {
 	var exists bool
-	_ = r.db.QueryRowContext(context.Background(),
+	_ = r.db.QueryRowContext(
+		context.Background(),
 		`SELECT EXISTS(SELECT 1 FROM spaces WHERE id = $1)`, spaceID,
 	).Scan(&exists)
 	if !exists {
 		return nil, false
 	}
 
-	rows, err := r.db.QueryContext(context.Background(),
+	rows, err := r.db.QueryContext(
+		context.Background(),
 		`SELECT id, space_id, author, content, created_at FROM messages WHERE space_id = $1 ORDER BY created_at`, spaceID,
 	)
 	if err != nil {
 		return nil, false
 	}
-	defer rows.Close()
+
+	defer func() {
+		_ = rows.Close()
+	}()
 
 	var msgs []*model.Message
 	for rows.Next() {
@@ -142,7 +151,8 @@ func (r *Repository) ListMessages(spaceID string) ([]*model.Message, bool) {
 
 func (r *Repository) GetMessage(spaceID, messageID string) (*model.Message, bool) {
 	var m model.Message
-	err := r.db.QueryRowContext(context.Background(),
+	err := r.db.QueryRowContext(
+		context.Background(),
 		`SELECT id, space_id, author, content, created_at FROM messages WHERE space_id = $1 AND id = $2`,
 		spaceID, messageID,
 	).Scan(&m.ID, &m.SpaceID, &m.Author, &m.Content, &m.CreatedAt)
