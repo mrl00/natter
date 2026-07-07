@@ -1,0 +1,125 @@
+// Package api implements the HTTP layer for the Natter API.
+// It provides request parsing, JSON responses, and error mapping from service errors to HTTP status codes.
+package api
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"time"
+
+	"github.com/mrl00/natter/internal/model"
+	"github.com/mrl00/natter/internal/service"
+)
+
+// Handlers holds the service dependency and exposes HTTP handler methods for each endpoint.
+type Handlers struct {
+	svc service.Service
+}
+
+func NewHandlers(s service.Service) *Handlers {
+	return &Handlers{svc: s}
+}
+
+func jsonResponse(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(v)
+}
+
+func jsonError(w http.ResponseWriter, status int, msg string) {
+	jsonResponse(w, status, map[string]string{"error": msg})
+}
+
+func (h *Handlers) Health(w http.ResponseWriter, r *http.Request) {
+	jsonResponse(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (h *Handlers) CreateSpace(w http.ResponseWriter, r *http.Request) {
+	var req model.CreateSpaceRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.Name == "" || req.Owner == "" {
+		jsonError(w, http.StatusBadRequest, "name and owner are required")
+		return
+	}
+
+	space, err := h.svc.CreateSpace(req.Name, req.Owner)
+	if err != nil {
+		jsonError(w, http.StatusInternalServerError, "failed to create space")
+		return
+	}
+
+	jsonResponse(w, http.StatusCreated, space)
+}
+
+func (h *Handlers) AddMessage(w http.ResponseWriter, r *http.Request) {
+	spaceID := r.PathValue("spaceId")
+
+	var req model.CreateMessageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.Author == "" || req.Content == "" {
+		jsonError(w, http.StatusBadRequest, "author and content are required")
+		return
+	}
+
+	msg, err := h.svc.AddMessage(spaceID, req.Author, req.Content)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			jsonError(w, http.StatusNotFound, "space not found")
+			return
+		}
+		jsonError(w, http.StatusInternalServerError, "failed to add message")
+		return
+	}
+
+	jsonResponse(w, http.StatusCreated, msg)
+}
+
+func (h *Handlers) ListMessages(w http.ResponseWriter, r *http.Request) {
+	spaceID := r.PathValue("spaceId")
+
+	var since time.Time
+	if sinceStr := r.URL.Query().Get("since"); sinceStr != "" {
+		var err error
+		since, err = time.Parse(time.RFC3339, sinceStr)
+		if err != nil {
+			jsonError(w, http.StatusBadRequest, "invalid since timestamp (use RFC3339)")
+			return
+		}
+	}
+
+	msgs, err := h.svc.ListMessages(spaceID, since)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			jsonError(w, http.StatusNotFound, "space not found")
+			return
+		}
+		jsonError(w, http.StatusInternalServerError, "failed to list messages")
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, msgs)
+}
+
+func (h *Handlers) GetMessage(w http.ResponseWriter, r *http.Request) {
+	spaceID := r.PathValue("spaceId")
+	messageID := r.PathValue("messageId")
+
+	msg, err := h.svc.GetMessage(spaceID, messageID)
+	if err != nil {
+		if errors.Is(err, service.ErrNotFound) {
+			jsonError(w, http.StatusNotFound, "space or message not found")
+			return
+		}
+		jsonError(w, http.StatusInternalServerError, "failed to get message")
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, msg)
+}

@@ -1,0 +1,40 @@
+services:
+  natter:
+    build:
+      context: .
+      dockerfile: build/docker/Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: "postgres://natter:natter@postgres:5432/natter_db?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - natter-net
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: natter
+      POSTGRES_PASSWORD: natter
+      POSTGRES_DB: natter_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - natter-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U natter -d natter_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - natter-net
+
+volumes:
+  natter-pgdata:
+
+networks:
+  natter-net:
