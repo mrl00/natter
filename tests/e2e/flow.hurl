@@ -8,10 +8,10 @@ POST http://localhost:8080/spaces
 }
 HTTP 201
 [Captures]
-space_id: jsonpath "$.id"
+space_uri: jsonpath "$.uri"
 
 # 2. Add first message
-POST http://localhost:8080/spaces/{{space_id}}/messages
+POST http://localhost:8080{{space_uri}}/messages
 {
   "author": "bob",
   "content": "Hey everyone, what book should we read next?"
@@ -22,10 +22,9 @@ message_id: jsonpath "$.id"
 [Asserts]
 jsonpath "$.author" == "bob"
 jsonpath "$.content" == "Hey everyone, what book should we read next?"
-jsonpath "$.spaceId" == "{{space_id}}"
 
 # 3. Add second message
-POST http://localhost:8080/spaces/{{space_id}}/messages
+POST http://localhost:8080{{space_uri}}/messages
 {
   "author": "carol",
   "content": "How about Dune?"
@@ -33,18 +32,18 @@ POST http://localhost:8080/spaces/{{space_id}}/messages
 HTTP 201
 
 # 4. List all messages
-GET http://localhost:8080/spaces/{{space_id}}/messages
+GET http://localhost:8080{{space_uri}}/messages
 HTTP 200
 [Asserts]
 jsonpath "$[0].author" == "bob"
 jsonpath "$[1].author" == "carol"
 
 # 5. List messages with since filter
-GET http://localhost:8080/spaces/{{space_id}}/messages?since=2020-01-01T00:00:00Z
+GET http://localhost:8080{{space_uri}}/messages?since=2020-01-01T00:00:00Z
 HTTP 200
 
 # 6. Get single message
-GET http://localhost:8080/spaces/{{space_id}}/messages/{{message_id}}
+GET http://localhost:8080{{space_uri}}/messages/{{message_id}}
 HTTP 200
 [Asserts]
 jsonpath "$.id" == "{{message_id}}"

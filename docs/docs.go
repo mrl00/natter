@@ -66,7 +66,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.Space"
+                            "$ref": "#/definitions/model.CreateSpaceResponse"
                         }
                     },
                     "400": {
@@ -281,6 +281,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.CreateSpaceResponse": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Message": {
             "type": "object",
             "properties": {
@@ -297,23 +308,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "spaceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.Space": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
                     "type": "string"
                 }
             }

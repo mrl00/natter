@@ -26,6 +26,12 @@ type CreateSpaceRequest struct {
 	Owner string `json:"owner"`
 }
 
+// CreateSpaceResponse is the response returned when a space is created.
+type CreateSpaceResponse struct {
+	Name string `json:"name"`
+	URI  string `json:"uri"`
+}
+
 // CreateMessageRequest is the payload for posting a new message to a space.
 type CreateMessageRequest struct {
 	Author  string `json:"author"`

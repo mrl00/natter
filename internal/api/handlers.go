@@ -5,6 +5,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -49,7 +50,7 @@ func (h *Handlers) Health(w http.ResponseWriter, r *http.Request) {
 // @Accept       json
 // @Produce      json
 // @Param        request body model.CreateSpaceRequest true "Space data"
-// @Success      201 {object} model.Space
+// @Success      201 {object} model.CreateSpaceResponse
 // @Failure      400 {object} map[string]string
 // @Failure      500 {object} map[string]string
 // @Router       /spaces [post]
@@ -70,7 +71,10 @@ func (h *Handlers) CreateSpace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse(w, http.StatusCreated, space)
+	jsonResponse(w, http.StatusCreated, model.CreateSpaceResponse{
+		Name: space.Name,
+		URI:  fmt.Sprintf("/spaces/%s", space.ID),
+	})
 }
 
 // AddMessage godoc
