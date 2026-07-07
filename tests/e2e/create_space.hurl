@@ -10,5 +10,5 @@ space_id: jsonpath "$.id"
 [Asserts]
 jsonpath "$.name" == "Coffee Morning"
 jsonpath "$.owner" == "alice"
-jsonpath "$.id" matches "[a-f0-9]{32}"
+jsonpath "$.id" matches "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
 jsonpath "$.createdAt" exists

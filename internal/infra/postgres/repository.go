@@ -4,12 +4,11 @@ package postgres
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mrl00/natter/internal/model"
 	"github.com/mrl00/natter/internal/repository"
 )
@@ -17,9 +16,7 @@ import (
 var _ repository.Repository = (*Repository)(nil)
 
 func generateID() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)
+	return uuid.New().String()
 }
 
 // Repository is a PostgreSQL-backed implementation of repository.Repository.

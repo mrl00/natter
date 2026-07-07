@@ -3,11 +3,10 @@
 package memory
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mrl00/natter/internal/model"
 )
 
@@ -26,9 +25,7 @@ func New() *Repository {
 }
 
 func generateID() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)
+	return uuid.New().String()
 }
 
 func (r *Repository) CreateSpace(name, owner string) *model.Space {
